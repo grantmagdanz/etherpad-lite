@@ -10,8 +10,8 @@ LABEL maintainer="Etherpad team, https://github.com/ether/etherpad-lite"
 ARG TIMEZONE=
 RUN \
   [ -z "${TIMEZONE}" ] || { \
-    ln -sf /usr/share/zoneinfo/"${TIMEZONE#/usr/share/zoneinfo/}" /etc/localtime; \
-    dpkg-reconfigure -f noninteractive tzdata; \
+  ln -sf /usr/share/zoneinfo/"${TIMEZONE#/usr/share/zoneinfo/}" /etc/localtime; \
+  dpkg-reconfigure -f noninteractive tzdata; \
   }
 
 # plugins to install while building the container. By default no plugins are
@@ -20,7 +20,7 @@ RUN \
 #
 # EXAMPLE:
 #   ETHERPAD_PLUGINS="ep_codepad ep_author_neat"
-ARG ETHERPAD_PLUGINS=
+ARG ETHERPAD_PLUGINS="ep_align ep_comments_page ep_embedded_hyperlinks2 ep_font_color ep_headings2 ep_markdown ep_webrtc"
 
 # Control whether abiword will be installed, enabling exports to DOC/PDF/ODT formats.
 # By default, it is not installed.
@@ -55,9 +55,9 @@ ARG EP_UID=5001
 ARG EP_GID=0
 ARG EP_SHELL=
 RUN groupadd --system ${EP_GID:+--gid "${EP_GID}" --non-unique} etherpad && \
-    useradd --system ${EP_UID:+--uid "${EP_UID}" --non-unique} --gid etherpad \
-        ${EP_HOME:+--home-dir "${EP_HOME}"} --create-home \
-        ${EP_SHELL:+--shell "${EP_SHELL}"} etherpad
+  useradd --system ${EP_UID:+--uid "${EP_UID}" --non-unique} --gid etherpad \
+  ${EP_HOME:+--home-dir "${EP_HOME}"} --create-home \
+  ${EP_SHELL:+--shell "${EP_SHELL}"} etherpad
 
 ARG EP_DIR=/opt/etherpad-lite
 RUN mkdir -p "${EP_DIR}" && chown etherpad:etherpad "${EP_DIR}"
@@ -65,17 +65,17 @@ RUN mkdir -p "${EP_DIR}" && chown etherpad:etherpad "${EP_DIR}"
 # the mkdir is needed for configuration of openjdk-11-jre-headless, see
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199
 RUN export DEBIAN_FRONTEND=noninteractive; \
-    mkdir -p /usr/share/man/man1 && \
-    apt-get -qq update && \
-    apt-get -qq dist-upgrade && \
-    apt-get -qq --no-install-recommends install \
-        ca-certificates \
-        git \
-        ${INSTALL_ABIWORD:+abiword} \
-        ${INSTALL_SOFFICE:+libreoffice} \
-        && \
-    apt-get -qq clean && \
-    rm -rf /var/lib/apt/lists/*
+  mkdir -p /usr/share/man/man1 && \
+  apt-get -qq update && \
+  apt-get -qq dist-upgrade && \
+  apt-get -qq --no-install-recommends install \
+  ca-certificates \
+  git \
+  ${INSTALL_ABIWORD:+abiword} \
+  ${INSTALL_SOFFICE:+libreoffice} \
+  && \
+  apt-get -qq clean && \
+  rm -rf /var/lib/apt/lists/*
 
 USER etherpad
 
@@ -92,9 +92,9 @@ COPY --chown=etherpad:etherpad ./ ./
 # seems to confuse tools such as `npm outdated`, `npm update`, and some ESLint
 # rules.
 RUN { [ -z "${ETHERPAD_PLUGINS}" ] || \
-      npm install --no-save --legacy-peer-deps ${ETHERPAD_PLUGINS}; } && \
-    src/bin/installDeps.sh && \
-    rm -rf ~/.npm
+  npm install --no-save --legacy-peer-deps ${ETHERPAD_PLUGINS}; } && \
+  src/bin/installDeps.sh && \
+  rm -rf ~/.npm
 
 # Copy the configuration file.
 COPY --chown=etherpad:etherpad ./settings.json.docker "${EP_DIR}"/settings.json
@@ -108,5 +108,5 @@ USER etherpad
 
 HEALTHCHECK --interval=20s --timeout=3s CMD ["etherpad-healthcheck"]
 
-EXPOSE 9001
+EXPOSE 10000
 CMD ["etherpad"]
